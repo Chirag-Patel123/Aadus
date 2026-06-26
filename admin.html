@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aadu's Kitchen — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --ink:#0b0c0e; --surface:#13141a; --raised:#1a1b22; --border:#252630; --border-l:#2e3040;
+  --fire:#ff4f00; --ember:#ff8c42; --text:#edeae4; --muted:#8a8896; --faint:#45434f;
+  --green:#3ecf8e; --yellow:#f5c842; --blue:#5b9cf6; --violet:#9e7af6; --red:#f06060;
+  --r:10px; --r-sm:7px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+h1,h2,h3,.mono{font-family:'Space Grotesk',sans-serif;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;}
+
+#toasts{position:fixed;top:18px;right:18px;z-index:999;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:340px;}
+.toast{background:var(--raised);border:1px solid var(--border-l);border-radius:var(--r);padding:13px 16px;display:flex;gap:11px;box-shadow:0 8px 32px rgba(0,0,0,.5);pointer-events:all;position:relative;animation:tIn .3s cubic-bezier(.34,1.56,.64,1) both;}
+.toast::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.toast.ok::before{background:var(--green);} .toast.err::before{background:var(--red);} .toast.info::before{background:var(--blue);}
+.toast-t{font-weight:600;font-size:13px;font-family:'Space Grotesk',sans-serif;} .toast-m{font-size:12px;color:var(--muted);margin-top:1px;}
+@keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+
+.auth-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse 900px 500px at 50% -10%,rgba(255,79,0,.08) 0%,transparent 70%);padding:24px;}
+.auth-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:44px 40px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.auth-brand{text-align:center;margin-bottom:30px;}
+.auth-icon{font-size:42px;display:block;margin-bottom:8px;}
+.auth-brand h1{font-size:21px;font-weight:700;background:linear-gradient(130deg,var(--fire),var(--ember));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.auth-brand p{font-size:12.5px;color:var(--muted);margin-top:4px;}
+label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:7px;}
+input[type=email],input[type=password],input[type=text]{width:100%;background:var(--raised);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;}
+input:focus{border-color:var(--fire);}
+.fg{margin-bottom:18px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:600;border:none;cursor:pointer;border-radius:var(--r-sm);transition:all .2s;}
+.btn-fire{background:linear-gradient(135deg,var(--fire),#ff6e30);color:#fff;padding:12px 20px;width:100%;box-shadow:0 4px 20px rgba(255,79,0,.3);}
+.btn-fire:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 28px rgba(255,79,0,.45);}
+.btn-fire:disabled{opacity:.5;cursor:not-allowed;}
+.err-box{background:rgba(240,96,96,.1);border:1px solid rgba(240,96,96,.25);border-radius:var(--r-sm);padding:11px 14px;color:var(--red);font-size:13px;margin-bottom:16px;display:none;}
+
+#dash-screen{flex-direction:column;}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(11,12,14,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:15px 26px;display:flex;align-items:center;gap:14px;}
+.tb-icon{font-size:24px;}
+.tb-title h2{font-size:16px;font-weight:700;} .tb-title p{font-size:11px;color:var(--muted);}
+.live-pill{display:flex;align-items:center;gap:5px;background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.25);border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;color:var(--green);}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:lp 2s infinite;}
+@keyframes lp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.65)}}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
+.u-email{font-size:12px;color:var(--muted);}
+.logout-btn{background:var(--raised);border:1px solid var(--border);color:var(--muted);padding:7px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;}
+.logout-btn:hover{color:var(--red);border-color:var(--red);}
+
+.page{padding:24px;max-width:1280px;margin:0 auto;width:100%;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden;}
+.stat-stripe{position:absolute;top:0;left:0;right:0;height:2px;}
+.s-rev .stat-stripe{background:linear-gradient(90deg,var(--fire),var(--ember));}
+.s-tot .stat-stripe{background:linear-gradient(90deg,var(--blue),#8ab4fa);}
+.s-pnd .stat-stripe{background:linear-gradient(90deg,var(--yellow),#f0a020);}
+.s-del .stat-stripe{background:linear-gradient(90deg,var(--green),#56e0a8);}
+.stat-emoji{font-size:22px;margin-bottom:8px;display:block;}
+.stat-val{font-size:24px;font-weight:700;line-height:1;margin-bottom:4px;}
+.s-rev .stat-val{color:var(--fire);} .s-tot .stat-val{color:var(--blue);} .s-pnd .stat-val{color:var(--yellow);} .s-del .stat-val{color:var(--green);}
+.stat-lbl{font-size:11px;color:var(--muted);}
+
+.panel-header{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
+.panel-title{font-size:15px;font-weight:700;} .panel-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.filter-bar{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:4px;overflow-x:auto;margin-left:auto;}
+.ftab{padding:6px 13px;border-radius:5px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;background:none;border:none;white-space:nowrap;font-family:'Space Grotesk',sans-serif;transition:all .18s;}
+.ftab:hover:not(.on){color:var(--text);background:rgba(255,255,255,.04);}
+.ftab.on{background:var(--fire);color:#fff;}
+.refresh-btn{display:inline-flex;align-items:center;gap:6px;background:var(--raised);border:1px solid var(--border);color:var(--muted);padding:7px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:'Space Grotesk',sans-serif;}
+.refresh-btn:hover{color:var(--text);border-color:var(--border-l);}
+.refresh-btn.spin .ri{display:inline-block;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.tbl-scroll{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:12px 15px;text-align:left;font-size:10.5px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);white-space:nowrap;font-family:'Space Grotesk',sans-serif;}
+tbody tr{border-bottom:1px solid rgba(37,38,48,.8);transition:background .15s;}
+tbody tr:last-child{border-bottom:none;} tbody tr:hover{background:rgba(255,255,255,.016);}
+tbody tr.flash{animation:rf 2s ease;}
+@keyframes rf{0%,100%{background:transparent}15%,85%{background:rgba(255,79,0,.07)}}
+td{padding:12px 15px;font-size:13px;vertical-align:middle;}
+.oid{font-family:monospace;font-size:12px;color:var(--ember);font-weight:600;}
+.cname{font-weight:600;font-size:13px;} .cphone{font-size:11px;color:var(--muted);margin-top:1px;}
+.items-cell{max-width:220px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.addr-cell{max-width:180px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.amt{font-weight:700;color:var(--fire);font-size:13.5px;}
+.pay-pill{font-size:11px;color:var(--muted);text-transform:uppercase;}
+.time-lbl{font-size:11.5px;color:var(--muted);white-space:nowrap;}
+
+.status-select{appearance:none;-webkit-appearance:none;border-radius:20px;padding:5px 26px 5px 11px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid;background-repeat:no-repeat;background-position:right 8px center;background-size:9px;font-family:'Space Grotesk',sans-serif;text-transform:capitalize;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8896' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");}
+.st-received{background:rgba(245,200,66,.1);color:var(--yellow);border-color:rgba(245,200,66,.3);}
+.st-preparing{background:rgba(158,122,246,.1);color:var(--violet);border-color:rgba(158,122,246,.3);}
+.st-out_for_delivery{background:rgba(255,79,0,.1);color:var(--fire);border-color:rgba(255,79,0,.3);}
+.st-delivered{background:rgba(126,125,138,.1);color:var(--muted);border-color:rgba(126,125,138,.3);}
+.st-cancelled{background:rgba(240,96,96,.1);color:var(--red);border-color:rgba(240,96,96,.3);}
+.status-select option{background:var(--raised);color:var(--text);}
+
+.state-row td{text-align:center;padding:50px !important;color:var(--muted);}
+.spinner{display:inline-block;width:24px;height:24px;border:2.5px solid var(--border);border-top-color:var(--fire);border-radius:50%;animation:spin .75s linear infinite;margin-bottom:10px;}
+.empty-ico{font-size:38px;display:block;margin-bottom:10px;}
+
+@media(max-width:1000px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){.page{padding:14px;} .topbar{padding:12px 16px;} .stats-row{grid-template-columns:1fr;} .u-email{display:none;}}
+</style>
+</head>
+<body>
+
+<div id="toasts"></div>
+
+<!-- LOGIN -->
+<div id="login-screen" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="auth-icon">🍜</span><h1>Aadu's Kitchen</h1>
+        <p>Admin access — authorized personnel only</p>
+      </div>
+      <div id="login-err" class="err-box"></div>
+      <div class="fg"><label>Admin Email</label><input type="email" id="l-email" placeholder="admin@aaduskitchen.com" autocomplete="username"></div>
+      <div class="fg"><label>Password</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn btn-fire" id="login-btn" onclick="doLogin()">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dash-screen" class="screen">
+  <div class="topbar">
+    <span class="tb-icon">🍜</span>
+    <div class="tb-title"><h2>Aadu's Kitchen</h2><p>Admin Dashboard</p></div>
+    <div class="live-pill" id="live-pill"><span class="live-dot"></span>LIVE</div>
+    <div class="tb-right">
+      <span class="u-email" id="u-email"></span>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="page">
+    <div class="stats-row">
+      <div class="stat s-rev"><span class="stat-stripe"></span><span class="stat-emoji">💰</span><div class="stat-val" id="st-rev">₹0</div><div class="stat-lbl">Today's Revenue</div></div>
+      <div class="stat s-tot"><span class="stat-stripe"></span><span class="stat-emoji">📦</span><div class="stat-val" id="st-tot">0</div><div class="stat-lbl">Orders Today</div></div>
+      <div class="stat s-pnd"><span class="stat-stripe"></span><span class="stat-emoji">⏳</span><div class="stat-val" id="st-pnd">0</div><div class="stat-lbl">Needs Action</div></div>
+      <div class="stat s-del"><span class="stat-stripe"></span><span class="stat-emoji">✅</span><div class="stat-val" id="st-del">0</div><div class="stat-lbl">Delivered Today</div></div>
+    </div>
+
+    <div class="panel-header">
+      <div><div class="panel-title">Orders</div><div class="panel-sub" id="panel-sub">Loading…</div></div>
+      <div class="filter-bar">
+        <button class="ftab on" onclick="setTab(this,'all')">All</button>
+        <button class="ftab" onclick="setTab(this,'received')">Received</button>
+        <button class="ftab" onclick="setTab(this,'preparing')">Preparing</button>
+        <button class="ftab" onclick="setTab(this,'out_for_delivery')">Out for Delivery</button>
+        <button class="ftab" onclick="setTab(this,'delivered')">Delivered</button>
+        <button class="ftab" onclick="setTab(this,'cancelled')">Cancelled</button>
+      </div>
+      <button class="refresh-btn" id="rbtn" onclick="doRefresh()"><i class="ri">↻</i> Refresh</button>
+    </div>
+
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th>
+            <th>Address</th><th>Payment</th><th>Status</th><th>Placed</th>
+          </tr></thead>
+          <tbody id="tbl-body">
+            <tr class="state-row"><td colspan="8"><div class="spinner"></div>Loading orders…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const SUPABASE_URL = 'https://pnqengnkjmbqiauuzdbw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBucWVuZ25ram1icWlhdXV6ZGJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzQ0NzgsImV4cCI6MjA5NjY1MDQ3OH0.Qlwzwhozi0z20PzcVHDRtQxq3JsfX3BpZdEdW-_4XPM';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true }
+});
+
+const STATUSES = ['received','preparing','out_for_delivery','delivered','cancelled'];
+const STATUS_LABEL = { received:'Received', preparing:'Preparing', out_for_delivery:'Out for Delivery', delivered:'Delivered', cancelled:'Cancelled' };
+
+let orders = [];
+let filter = 'all';
+let rtChan = null;
+
+/* ===================== BOOT — real session check, not a stored password ===================== */
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) { await enterDashboard(session); } else { show('login-screen'); }
+});
+
+// Keep the panel in sync if the session expires or is revoked elsewhere
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_OUT' || !session) {
+    if (document.getElementById('dash-screen').classList.contains('active')) {
+      show('login-screen');
+      toast('info', 'Session ended', 'Please sign in again.');
+    }
+  }
+});
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function enterDashboard(session) {
+  document.getElementById('u-email').textContent = session.user.email;
+  show('dash-screen');
+  await loadOrders();
+  subscribeRT();
+}
+
+/* ===================== LOGIN / LOGOUT — real Supabase Auth ===================== */
+async function doLogin() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  const err = document.getElementById('login-err');
+  const btn = document.getElementById('login-btn');
+  err.style.display = 'none';
+  if (!email || !pass) { err.textContent = 'Enter your email and password.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+    toast('ok', '👋 Welcome back', 'Signed in successfully.');
+    await enterDashboard(data.session);
+  } catch (e) {
+    err.textContent = e.message?.includes('Invalid') ? 'Incorrect email or password.' : (e.message || 'Login failed.');
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('login-screen').classList.contains('active')) doLogin(); });
+
+async function doLogout() {
+  if (rtChan) { await sb.removeChannel(rtChan); rtChan = null; }
+  await sb.auth.signOut();
+  orders = [];
+  show('login-screen');
+  toast('info', 'Signed out', '');
+}
+
+/* ===================== ORDERS ===================== */
+async function loadOrders() {
+  try {
+    const { data, error } = await sb.from('orders').select('*').order('created_at', { ascending: false }).limit(300);
+    if (error) throw error;
+    orders = data || [];
+    render(); renderStats();
+    document.getElementById('panel-sub').textContent = `${orders.length} orders · last loaded ${new Date().toLocaleTimeString('en-IN')}`;
+  } catch (e) {
+    document.getElementById('tbl-body').innerHTML = `<tr class="state-row"><td colspan="8"><span class="empty-ico">⚠️</span>Could not load orders.<br><span style="font-size:11.5px">${esc(e.message)}</span></td></tr>`;
+  }
+}
+async function doRefresh() {
+  const btn = document.getElementById('rbtn'); btn.classList.add('spin');
+  await loadOrders();
+  setTimeout(() => btn.classList.remove('spin'), 600);
+}
+
+function subscribeRT() {
+  rtChan = sb.channel('admin-orders')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'orders' }, p => {
+      orders.unshift(p.new); render(); renderStats();
+      toast('ok', '🔔 New order', `${p.new.customer_name || 'Customer'} — ₹${p.new.total}`);
+      setTimeout(() => { const row = document.querySelector(`tr[data-id="${p.new.id}"]`); if (row) row.classList.add('flash'); }, 50);
+    })
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, p => {
+      const i = orders.findIndex(o => o.id === p.new.id);
+      if (i !== -1) orders[i] = p.new;
+      render(); renderStats();
+    })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'orders' }, p => {
+      orders = orders.filter(o => o.id !== p.old.id); render(); renderStats();
+    })
+    .subscribe(status => {
+      document.getElementById('live-pill').style.opacity = status === 'SUBSCRIBED' ? '1' : '.4';
+    });
+}
+
+function renderStats() {
+  const today = new Date().toDateString();
+  const tod = orders.filter(o => new Date(o.created_at).toDateString() === today);
+  const rev = tod.filter(o => o.status !== 'cancelled').reduce((s, o) => s + parseFloat(o.total || 0), 0);
+  const pnd = orders.filter(o => ['received', 'preparing'].includes(o.status || 'received')).length;
+  const del = tod.filter(o => o.status === 'delivered').length;
+  document.getElementById('st-rev').textContent = '₹' + rev.toLocaleString('en-IN');
+  document.getElementById('st-tot').textContent = tod.length;
+  document.getElementById('st-pnd').textContent = pnd;
+  document.getElementById('st-del').textContent = del;
+}
+
+function setTab(el, f) {
+  filter = f;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+
+function render() {
+  const list = filter === 'all' ? orders : orders.filter(o => (o.status || 'received') === filter);
+  const tb = document.getElementById('tbl-body');
+  if (!list.length) {
+    tb.innerHTML = `<tr class="state-row"><td colspan="8"><span class="empty-ico">📭</span>No orders ${filter !== 'all' ? 'with status "' + STATUS_LABEL[filter] + '"' : 'yet'}.</td></tr>`;
+    return;
+  }
+  tb.innerHTML = list.map(o => {
+    const status = o.status || 'received';
+    return `<tr data-id="${esc(o.id)}">
+      <td><span class="oid">${esc(o.id)}</span></td>
+      <td><div class="cname">${esc(o.customer_name || '—')}</div><div class="cphone">📞 ${esc(o.phone || '—')}</div></td>
+      <td class="items-cell" title="${esc(o.items_summary || '')}">${esc(o.items_summary || '—')}</td>
+      <td><span class="amt">₹${parseFloat(o.total || 0).toLocaleString('en-IN')}</span></td>
+      <td class="addr-cell" title="${esc(o.delivery_address || '')}">${esc(o.delivery_address || '—')}</td>
+      <td><span class="pay-pill">${esc(o.payment_method || '—')}</span></td>
+      <td>
+        <select class="status-select st-${status}" onchange="changeStatus('${esc(o.id)}', this.value, this)">
+          ${STATUSES.map(s => `<option value="${s}" ${s === status ? 'selected' : ''}>${STATUS_LABEL[s]}</option>`).join('')}
+        </select>
+      </td>
+      <td><span class="time-lbl">${relTime(o.created_at)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+async function changeStatus(id, newStatus, selectEl) {
+  selectEl.className = `status-select st-${newStatus}`;
+  selectEl.disabled = true;
+  try {
+    const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', id);
+    if (error) throw error;
+    const i = orders.findIndex(o => o.id === id);
+    if (i !== -1) orders[i].status = newStatus;
+    renderStats();
+    toast('ok', '✓ Status updated', `Order ${id} → ${STATUS_LABEL[newStatus]}`);
+  } catch (e) {
+    toast('err', '✗ Update failed', e.message.includes('row-level security') ? 'You may have been signed out — please log in again.' : e.message);
+    await loadOrders();
+  } finally {
+    selectEl.disabled = false;
+  }
+}
+
+/* ===================== HELPERS ===================== */
+function relTime(d) {
+  if (!d) return '—';
+  const mins = Math.floor((Date.now() - new Date(d)) / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
+  return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+}
+function esc(s) { if (s == null) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(type, title, msg, dur = 4000) {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<div><div class="toast-t">${esc(title)}</div><div class="toast-m">${esc(msg)}</div></div>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.remove(), dur);
+}
+
+setInterval(() => { if (document.getElementById('dash-screen').classList.contains('active')) loadOrders(); }, 60000);
+</script>
+</body>
+</html>
