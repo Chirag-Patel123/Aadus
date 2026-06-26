@@ -1,0 +1,1389 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aadu's Kitchen — Kandivali, Mumbai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/navbar.css">
+<link rel="stylesheet" href="css/hero.css">
+<link rel="stylesheet" href="css/menu.css">
+<link rel="stylesheet" href="css/cart.css">
+<link rel="stylesheet" href="css/checkout.css">
+<link rel="stylesheet" href="css/profile.css">
+<link rel="stylesheet" href="css/animations.css">
+<link rel="stylesheet" href="css/modals.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+
+<style>
+/* ============================================
+   SEARCH MODAL
+============================================ */
+.search-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 6000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+.search-modal-overlay.open { opacity: 1; visibility: visible; }
+.search-modal-container {
+    background: #fff;
+    border-radius: 28px;
+    width: 90%;
+    max-width: 500px;
+    transform: scale(0.9) translateY(30px);
+    transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
+    overflow: hidden;
+}
+.search-modal-overlay.open .search-modal-container { transform: scale(1) translateY(0); }
+.search-modal-header {
+    background: var(--orange);
+    padding: 1.5rem;
+    text-align: center;
+    color: white;
+    position: relative;
+}
+.search-modal-header h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.search-close-btn {
+    position: absolute;
+    top: 50%;
+    right: 1.5rem;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.25);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+.search-close-btn:hover { background: rgba(255,255,255,0.4); }
+.search-input-wrapper { padding: 1.5rem; }
+.search-field-wrap { position: relative; display: flex; align-items: center; }
+.search-field-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--gray);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+}
+.search-input-field {
+    width: 100%;
+    padding: 14px 44px 14px 42px;
+    border: 2px solid var(--border);
+    border-radius: 50px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.search-input-field:focus {
+    outline: none;
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(255,107,0,0.1);
+}
+.search-clear-btn {
+    position: absolute;
+    right: 14px;
+    background: var(--light-gray);
+    border: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.search-category-pills {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+}
+.search-pill {
+    background: var(--light-gray);
+    border: none;
+    border-radius: 50px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    color: var(--dark);
+}
+.search-pill.active, .search-pill:hover { background: var(--orange); color: white; }
+.search-results-list { max-height: 300px; overflow-y: auto; padding: 0 1.5rem 1.5rem; }
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+    animation: fadeInUp 0.3s ease;
+}
+.search-result-item:hover { background: var(--orange-pale); border-radius: 12px; }
+.search-result-img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+.search-result-info { flex: 1; }
+.search-result-name { font-weight: 700; font-size: 0.95rem; }
+.search-result-meta { font-size: 0.75rem; color: var(--gray); margin-top: 2px; }
+.search-result-right { text-align: right; }
+.search-result-price { color: var(--orange); font-weight: 800; font-size: 0.95rem; }
+.search-result-add {
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 4px;
+    font-family: inherit;
+}
+.search-result-add:hover { background: var(--orange-light); }
+.no-results { text-align: center; padding: 2rem; color: var(--gray); }
+
+/* Password toggle */
+.password-wrapper { position: relative; }
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+}
+
+/* Login modal brand */
+.modal-brand-header { text-align: center; margin-bottom: 1.5rem; }
+.modal-brand-icon { font-size: 2.8rem; margin-bottom: 0.3rem; }
+.modal-brand-sub { color: var(--gray); font-size: 0.85rem; margin-top: 0.2rem; }
+.modal-form-title { font-family: 'DM Serif Display',serif; font-size: 1.5rem; margin-bottom: 0.25rem; color: var(--dark); }
+.modal-form-sub { color: var(--gray); font-size: 0.9rem; margin-bottom: 1.2rem; }
+
+/* Payment methods */
+.payment-methods { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 0.5rem; }
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #fff;
+}
+.payment-option input[type="radio"] { display: none; }
+.payment-option.selected { border-color: var(--orange); background: var(--orange-pale); }
+.pay-icon { display: flex; align-items: center; color: var(--gray); }
+.pay-label { flex: 1; font-weight: 600; font-size: 0.95rem; }
+.pay-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--light-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.payment-option.selected .pay-check { background: var(--orange); color: white; }
+.payment-extra-field { animation: slideDown 0.3s ease; }
+@keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+
+/* Checkout modal */
+.checkout-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+.checkout-modal-overlay.open { opacity: 1; visibility: visible; }
+.checkout-modal-container {
+    background: #fff;
+    border-radius: 28px;
+    width: 90%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+    transform: scale(0.9) translateY(30px);
+    transition: all 0.4s cubic-bezier(0.68,-0.55,0.265,1.55);
+}
+.checkout-modal-overlay.open .checkout-modal-container { transform: scale(1) translateY(0); }
+.checkout-modal-header {
+    background: var(--orange);
+    padding: 1.5rem;
+    border-radius: 28px 28px 0 0;
+    color: white;
+    text-align: center;
+}
+.checkout-modal-header h3 { font-family: 'DM Serif Display',serif; font-size: 1.6rem; margin-bottom: 0.3rem; }
+.checkout-modal-body { padding: 1.8rem; }
+.checkout-input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.2s;
+    margin-bottom: 1rem;
+    box-sizing: border-box;
+}
+.checkout-input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,107,0,0.1); }
+.checkout-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--dark);
+    font-size: 0.85rem;
+}
+.checkout-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+.checkout-btn-primary {
+    flex: 1;
+    background: var(--orange);
+    color: white;
+    border: none;
+    border-radius: 40px;
+    padding: 14px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.checkout-btn-primary:hover { background: var(--orange-light); transform: translateY(-2px); }
+.checkout-btn-secondary {
+    flex: 1;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 40px;
+    padding: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.checkout-btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+
+/* Pre-filled user info */
+.checkout-prefilled-row { display: flex; gap: 0.8rem; margin-bottom: 1rem; }
+.checkout-prefilled-item {
+    flex: 1;
+    background: var(--orange-pale, #FFF3EA);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.cpf-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--orange);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.cpf-value { font-weight: 700; font-size: 0.9rem; color: var(--dark); }
+
+/* Order summary */
+.checkout-summary-box { background: var(--light-gray,#F5F5F5); border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; }
+.cs-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 3px 0; color: var(--gray); }
+.cs-total { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.95rem; border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; color: var(--dark); }
+
+/* Loading spinner */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--light-gray);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 1rem auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ============================================
+   PROFESSIONAL ORDER SUCCESS UI
+============================================ */
+.order-success-wrap {
+    text-align: center;
+    padding: 1.5rem 1rem 1rem;
+}
+.order-success-icon-ring {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 1.2rem;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(34,197,94,0.3);
+    animation: successPop 0.5s cubic-bezier(0.68,-0.55,0.265,1.55) both;
+}
+.order-success-icon-ring svg {
+    width: 46px;
+    height: 46px;
+    stroke: white;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+@keyframes successPop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.order-success-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.7rem;
+    color: var(--dark);
+    margin-bottom: 0.3rem;
+    animation: fadeUp 0.4s ease 0.2s both;
+}
+.order-success-sub {
+    color: var(--gray);
+    font-size: 0.9rem;
+    margin-bottom: 1.4rem;
+    animation: fadeUp 0.4s ease 0.3s both;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.order-id-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--orange-pale, #FFF3EA);
+    border: 1.5px dashed var(--orange);
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--orange);
+    margin-bottom: 1.4rem;
+    animation: fadeUp 0.4s ease 0.35s both;
+}
+.order-status-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 1.6rem;
+    animation: fadeUp 0.4s ease 0.45s both;
+}
+.oss-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    max-width: 80px;
+}
+.oss-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--light-gray);
+    color: var(--gray);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+}
+.oss-dot.active {
+    background: var(--orange);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255,107,0,0.3);
+}
+.oss-dot.done {
+    background: #22c55e;
+    color: white;
+}
+.oss-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--gray);
+    text-align: center;
+    line-height: 1.2;
+}
+.oss-label.active { color: var(--orange); }
+.oss-connector {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    margin-bottom: 22px;
+    max-width: 32px;
+}
+.oss-connector.done { background: #22c55e; }
+.order-success-actions {
+    display: flex;
+    gap: 0.75rem;
+    animation: fadeUp 0.4s ease 0.5s both;
+}
+.osa-track {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 13px;
+    border: 1.5px solid var(--orange);
+    border-radius: 40px;
+    color: var(--orange);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: transparent;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.osa-track:hover { background: var(--orange-pale); }
+.osa-continue {
+    flex: 1.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 13px;
+    background: var(--orange);
+    border: none;
+    border-radius: 40px;
+    color: white;
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.osa-continue:hover { background: var(--orange-light); transform: translateY(-1px); }
+
+.text-center { text-align: center; margin-top: 1rem; }
+.link { color: var(--orange); cursor: pointer; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-logo">Aadu's <span>Kitchen</span><small>Kandivali, Mumbai</small></div>
+  <ul class="nav-links">
+    <li><a href="#home" class="active">Home</a></li>
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#offers">Offers</a></li>
+    <li><a href="#track">Track Order</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-search" title="Search" onclick="openSearchModal()">
+      <i data-lucide="search"></i>
+    </div>
+    <button class="login-btn" id="guestLoginBtn" onclick="openLogin()">Login / Sign Up</button>
+    <div style="position:relative;display:none;" id="userNavArea">
+      <button class="user-avatar-btn" id="userAvatarBtn" onclick="toggleUserDropdown()">?</button>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-header">
+          <div class="user-dropdown-name" id="ddName">—</div>
+          <div class="user-dropdown-phone" id="ddPhone">—</div>
+        </div>
+        <div class="user-dropdown-item" onclick="openAccount('profile')"><span class="ico"><i data-lucide="user"></i></span> My Profile</div>
+        <div class="user-dropdown-item" onclick="openAccount('orders')"><span class="ico"><i data-lucide="package"></i></span> My Orders</div>
+        <div class="user-dropdown-item" onclick="openAccount('addresses')"><span class="ico"><i data-lucide="map-pin"></i></span> Saved Addresses</div>
+        <div class="dropdown-divider"></div>
+        <div class="user-dropdown-item" style="color:var(--red);" onclick="logoutUser()"><span class="ico"><i data-lucide="log-out"></i></span> Logout</div>
+      </div>
+    </div>
+    <button class="cart-btn" onclick="openCart()"><span class="ico"><i data-lucide="shopping-cart"></i></span> Cart <span class="cart-count" id="cartCount">0</span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-content">
+    <div class="hero-badge"><span></span> Open Now · 10 AM – 9 PM</div>
+    <h1><span class="highlight">Quick</span> and Tasty<br>Food <span class="highlight">Delivered</span><br>with a Dash of Speed</h1>
+    <p class="hero-sub">Authentic Chinese, Sichuan & Street Food from the heart of Kandivali East. Fresh, hot & delivered fast.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="scrollToMenu()"><span class="ico"><i data-lucide="utensils"></i></span> Order Now</button>
+      <button class="btn-secondary" onclick="scrollToTrack()"><span class="ico"><i data-lucide="package-search"></i></span> Track Order</button>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-num">4.4 <span class="ico"><i data-lucide="star"></i></span></div><div class="stat-label">Rating</div></div>
+      <div><div class="stat-num">180+</div><div class="stat-label">Reviews</div></div>
+      <div><div class="stat-num">30min</div><div class="stat-label">Delivery</div></div>
+      <div><div class="stat-num"><span class="inr"><span class="inr-sym">₹</span>350</span></div><div class="stat-label">For Two</div></div>
+    </div>
+  </div>
+  <div class="hero-img-wrap">
+    <div class="hero-circle">
+      <img src="https://images.unsplash.com/photo-1555126634-323283e090fa?w=600&q=80" alt="Chinese food platter">
+    </div>
+    <div class="hero-float-card card1">
+      <div class="fc-icon" style="background:#FFF3EA;"><span class="ico"><i data-lucide="utensils"></i></span></div>
+      <div><div style="font-size:.7rem;color:var(--gray);">Today's Special</div><div>Schezwan Fried Rice</div></div>
+    </div>
+    <div class="hero-float-card card2">
+      <div class="fc-icon" style="background:#E8F8F0;"><span class="ico"><i data-lucide="shield-check"></i></span></div>
+      <div><div style="font-size:.7rem;color:var(--gray);">Fresh & Tasty</div><div>100% Hygienic</div></div>
+    </div>
+    <div class="hero-float-card card3">
+      <div class="fc-icon" style="background:#FFF3EA;"><span class="ico"><i data-lucide="zap"></i></span></div>
+      <div><div style="font-size:.7rem;color:var(--gray);">Fast Delivery</div><div>Within 30 Mins</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES STRIP -->
+<div class="features-strip">
+  <div class="feature-item reveal"><div class="feature-icon"><span class="ico"><i data-lucide="rocket"></i></span></div><div><div class="feature-title">Fast Delivery</div><div class="feature-desc">Within 30 minutes</div></div></div>
+  <div class="feature-item reveal"><div class="feature-icon"><span class="ico"><i data-lucide="leaf"></i></span></div><div><div class="feature-title">Fresh Food</div><div class="feature-desc">100% hygienic</div></div></div>
+  <div class="feature-item reveal"><div class="feature-icon"><span class="ico"><i data-lucide="gift"></i></span></div><div><div class="feature-title">Free Delivery</div><div class="feature-desc">No extra cost</div></div></div>
+</div>
+
+<!-- MENU -->
+<section class="menu-section" id="menu">
+  <div class="section-header reveal">
+    <div class="section-tag">Our Menu</div>
+    <h2 class="section-title">Our <span>Best Delivered</span> Dishes</h2>
+    <p class="section-sub">Explore our mouth-watering Chinese & Street Food dishes</p>
+  </div>
+  <div class="category-tabs reveal">
+    <button class="cat-tab active" onclick="filterMenu('all',this)">All</button>
+    <button class="cat-tab" onclick="filterMenu('chinese',this)">Chinese</button>
+    <button class="cat-tab" onclick="filterMenu('sichuan',this)">Sichuan</button>
+    <button class="cat-tab" onclick="filterMenu('street',this)">Street Food</button>
+    <button class="cat-tab" onclick="filterMenu('starters',this)">Starters</button>
+  </div>
+  <div class="menu-grid" id="menuGrid"></div>
+</section>
+
+<!-- SPECIALS -->
+<section class="special-section reveal" id="specials">
+  <div class="section-header"><div class="section-tag">Specials</div><h2 class="section-title">Most <span>Loved</span> Items</h2></div>
+  <div class="special-grid" id="specialGrid"></div>
+</section>
+
+<!-- OFFERS -->
+<section class="offers-section" id="offers">
+  <div class="section-header reveal"><div class="section-tag">Deals & Offers</div><h2 class="section-title">Hot <span>Offers</span> Just for You</h2></div>
+  <div class="offers-grid reveal">
+    <div class="offer-card orange" onclick="copyCode('AADU60')"><div class="offer-badge">Limited Time</div><div class="offer-discount">60% OFF</div><p class="offer-title">On your first order!</p><div class="offer-code-wrap"><span class="offer-code">AADU60</span><button class="copy-btn">Copy Code</button></div></div>
+    <div class="offer-card dark" onclick="copyCode('AADU25')"><div class="offer-badge">Special Offer</div><div class="offer-discount">25% OFF</div><p class="offer-title">On all Sichuan dishes</p><div class="offer-code-wrap"><span class="offer-code">AADU25</span><button class="copy-btn">Copy Code</button></div></div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="why-section reveal">
+  <div class="section-header"><div class="section-tag">Why Us</div><h2 class="section-title">Why Choose <span>Aadu's Kitchen?</span></h2></div>
+  <div class="why-grid">
+    <div class="why-card reveal"><div class="why-icon"><span class="ico"><i data-lucide="chef-hat"></i></span></div><div class="why-title">Expert Chefs</div><div class="why-desc">Authentic flavors with years of expertise</div></div>
+    <div class="why-card reveal"><div class="why-icon"><span class="ico"><i data-lucide="sprout"></i></span></div><div class="why-title">Fresh Ingredients</div><div class="why-desc">Fresh vegetables every day</div></div>
+    <div class="why-card reveal"><div class="why-icon"><span class="ico"><i data-lucide="zap"></i></span></div><div class="why-title">Super Fast</div><div class="why-desc">Delivery within 30 minutes</div></div>
+    <div class="why-card reveal"><div class="why-icon"><span class="ico"><i data-lucide="indian-rupee"></i></span></div><div class="why-title">Great Value</div><div class="why-desc">Pocket-friendly prices</div></div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="reviews-section">
+  <div class="section-header reveal"><div class="section-tag">Reviews</div><h2 class="section-title">What Our <span>Customers Say</span></h2></div>
+  <div class="reviews-grid">
+    <div class="review-card reveal"><div class="reviewer"><div class="reviewer-avatar">NG</div><div><div class="reviewer-name">Neha Gandhi</div></div></div><div class="review-stars">★★★★★</div><p>"Loved the Schezwan fried rice! Absolutely delicious!"</p></div>
+    <div class="review-card reveal"><div class="reviewer"><div class="reviewer-avatar">PM</div><div><div class="reviewer-name">Pinkesh Malaviya</div></div></div><div class="review-stars">★★★★☆</div><p>"Great Chinese food! Generous portions and spot-on flavors."</p></div>
+    <div class="review-card reveal"><div class="reviewer"><div class="reviewer-avatar">RK</div><div><div class="reviewer-name">Rahul Kapoor</div></div></div><div class="review-stars">★★★★★</div><p>"Veg Crispy and Triple Fried Rice combo is unbeatable!"</p></div>
+  </div>
+</section>
+
+<!-- TRACK ORDER -->
+<section class="track-section" id="track">
+  <div class="section-header reveal"><div class="section-tag">Track Order</div><h2 class="section-title">Track Your <span>Order Live</span></h2></div>
+  <div class="track-card reveal">
+    <div class="track-input-row"><input type="text" class="track-input" placeholder="Enter Order ID (e.g. AK-001)" id="trackInput"><button class="track-btn" onclick="trackOrder()">Track</button></div>
+    <div id="trackResult" style="display:none;"><div style="background:var(--orange-pale);border-radius:12px;padding:1rem;text-align:center;"><strong id="trackOrderId"></strong><br><span id="trackOrderStatus"></span></div></div>
+  </div>
+</section>
+
+<!-- LOCATION -->
+<section class="location-section" id="contact">
+  <div class="section-header reveal"><div class="section-tag">Find Us</div><h2 class="section-title">Visit <span>Aadu's Kitchen</span></h2></div>
+  <div class="location-grid reveal">
+    <div class="location-info">
+      <div class="info-item"><div class="info-icon"><span class="ico"><i data-lucide="map-pin"></i></span></div><div><div class="info-label">Address</div><div class="info-value">Deejay Smruti, Shop No.1, Ashok Nagar, Akurli Road, Kandivali East, Mumbai – 400101</div></div></div>
+      <div class="info-item"><div class="info-icon"><span class="ico"><i data-lucide="clock"></i></span></div><div><div class="info-label">Hours</div><div class="info-value">10:00 AM – 9:00 PM · Mon–Sun</div></div></div>
+      <div class="info-item"><div class="info-icon"><span class="ico"><i data-lucide="phone"></i></span></div><div><div class="info-label">Phone</div><div class="info-value">+91 90825 87359</div></div></div>
+    </div>
+    <div class="map-placeholder"><iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3768.!2d72.8567323!3d19.201247!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7b79b179c3723%3A0x756ac400adf0f02e!2sAadu&#39;s%20Kitchen!5e0!3m2!1sen!2sin!4v1" allowfullscreen=""></iframe></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand"><div style="font-family:'DM Serif Display',serif;font-size:1.6rem;font-weight:900;color:#fff;">Aadu's <span style="color:var(--orange);">Kitchen</span></div><p>Authentic Chinese & Street Food from Kandivali East, Mumbai.</p></div>
+    <div class="footer-col"><h4>Menu</h4><ul><li>Chinese</li><li>Sichuan</li><li>Street Food</li></ul></div>
+    <div class="footer-col"><h4>Contact</h4><ul><li><i data-lucide="phone" style="width:14px;height:14px;vertical-align:middle;"></i> +91 90825 87359</li><li><i data-lucide="mail" style="width:14px;height:14px;vertical-align:middle;"></i> info@aaduskitchen.com</li></ul></div>
+  </div>
+  <div class="footer-bottom"><p>© 2024 Aadu's Kitchen. All Rights Reserved.</p></div>
+</footer>
+
+<!-- STICKY ORDER BTN -->
+<div class="sticky-order"><button class="sticky-order-btn" onclick="scrollToMenu()"><span class="ico"><i data-lucide="utensils"></i></span> Order Now</button></div>
+
+<!-- CART -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3><span class="ico"><i data-lucide="shopping-cart"></i></span> Your Cart</h3>
+    <button class="cart-close" onclick="closeCart()"><span class="ico"><i data-lucide="x"></i></span></button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty">
+      <div class="cart-empty-icon"><span class="ico"><i data-lucide="shopping-basket"></i></span></div>
+      <p>Your cart is empty</p>
+    </div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none;">
+    <div class="cart-total"><span>Total</span><span id="cartTotal">₹0</span></div>
+    <button class="checkout-btn" onclick="openCheckoutModal()">Proceed to Checkout <i data-lucide="arrow-right" style="width:16px;height:16px;vertical-align:middle;"></i></button>
+  </div>
+</div>
+
+<!-- SEARCH MODAL -->
+<div class="search-modal-overlay" id="searchModal" onclick="handleSearchOverlayClick(event)">
+  <div class="search-modal-container">
+    <div class="search-modal-header">
+      <h3><i data-lucide="search" style="width:20px;height:20px;"></i> Search Menu</h3>
+      <p>Find your favourite dishes instantly</p>
+      <button class="search-close-btn" onclick="closeSearchModal()"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+    </div>
+    <div class="search-input-wrapper">
+      <div class="search-field-wrap">
+        <span class="search-field-icon"><i data-lucide="search" style="width:16px;height:16px;"></i></span>
+        <input type="text" class="search-input-field" id="searchInput" placeholder="Try "Rice", "Noodles", "Crispy"…" autocomplete="off">
+        <button class="search-clear-btn" id="searchClearBtn" onclick="clearSearch()" style="display:none;"><i data-lucide="x" style="width:12px;height:12px;"></i></button>
+      </div>
+      <div class="search-category-pills" id="searchCategoryPills">
+        <button class="search-pill active" onclick="setSearchCategory('all',this)">All</button>
+        <button class="search-pill" onclick="setSearchCategory('chinese',this)">Chinese</button>
+        <button class="search-pill" onclick="setSearchCategory('sichuan',this)">Sichuan</button>
+        <button class="search-pill" onclick="setSearchCategory('street',this)">Street</button>
+        <button class="search-pill" onclick="setSearchCategory('starters',this)">Starters</button>
+      </div>
+    </div>
+    <div class="search-results-list" id="searchResultsList">
+      <div class="no-results"><i data-lucide="search" style="width:32px;height:32px;opacity:0.3;display:block;margin:0 auto 0.5rem;"></i>Type above to discover dishes…</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal" style="max-width:550px;">
+    <button class="modal-close" onclick="closeLogin()"><span class="ico"><i data-lucide="x"></i></span></button>
+    <div class="modal-brand-header">
+      <div class="modal-brand-icon">🍽️</div>
+      <div class="modal-logo">Aadu's <span>Kitchen</span></div>
+      <p class="modal-brand-sub">Kandivali's favourite food spot</p>
+    </div>
+    <div id="loginForm">
+      <h2 class="modal-form-title">Welcome Back!</h2>
+      <p class="modal-form-sub">Sign in to place orders & track delivery</p>
+      <div class="form-group-m">
+        <label class="form-label-m"><i data-lucide="mail" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Email</label>
+        <input type="email" class="form-input-m" id="loginEmail" placeholder="your@email.com">
+      </div>
+      <div class="form-group-m">
+        <label class="form-label-m"><i data-lucide="lock" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Password</label>
+        <div class="password-wrapper">
+          <input type="password" class="form-input-m" id="loginPassword" placeholder="Enter your password">
+          <button type="button" class="password-toggle" onclick="togglePassword('loginPassword')"><i data-lucide="eye" style="width:16px;height:16px;"></i></button>
+        </div>
+      </div>
+      <button class="submit-btn" onclick="handleEmailLogin()">
+        <i data-lucide="log-in" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Login to Order
+      </button>
+      <p class="text-center" style="margin-top:1rem;">New to Aadu's Kitchen? <span class="link" onclick="showSignupForm()">Create Account</span></p>
+    </div>
+    <div id="signupForm" style="display:none;">
+      <h2 class="modal-form-title">Join Aadu's Kitchen</h2>
+      <p class="modal-form-sub">Create your account to start ordering</p>
+      <div class="form-row-2">
+        <div class="form-group-m"><label class="form-label-m">First Name</label><input class="form-input-m" id="signupFirstName" placeholder="Rahul"></div>
+        <div class="form-group-m"><label class="form-label-m">Last Name</label><input class="form-input-m" id="signupLastName" placeholder="Sharma"></div>
+      </div>
+      <div class="form-group-m">
+        <label class="form-label-m"><i data-lucide="mail" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Email</label>
+        <input type="email" class="form-input-m" id="signupEmail" placeholder="rahul@example.com">
+      </div>
+      <div class="form-group-m">
+        <label class="form-label-m"><i data-lucide="smartphone" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Phone</label>
+        <div class="phone-input-wrap"><span class="phone-prefix">+91</span><input type="tel" class="phone-input" id="signupPhone" placeholder="9876543210"></div>
+      </div>
+      <div class="form-group-m">
+        <label class="form-label-m"><i data-lucide="lock" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Password</label>
+        <div class="password-wrapper">
+          <input type="password" class="form-input-m" id="signupPassword" placeholder="6+ characters">
+          <button type="button" class="password-toggle" onclick="togglePassword('signupPassword')"><i data-lucide="eye" style="width:16px;height:16px;"></i></button>
+        </div>
+      </div>
+      <div class="form-group-m">
+        <label class="form-label-m"><i data-lucide="home" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i> Address</label>
+        <input class="form-input-m" id="signupAddress" placeholder="Flat, Building, Street">
+      </div>
+      <div class="form-row-2">
+        <div class="form-group-m"><label class="form-label-m">City</label><input class="form-input-m" id="signupCity" value="Mumbai"></div>
+        <div class="form-group-m"><label class="form-label-m">PIN Code</label><input class="form-input-m" id="signupPin" placeholder="400101"></div>
+      </div>
+      <button class="submit-btn" onclick="handleSignUp()">
+        <i data-lucide="user-plus" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Create Account
+      </button>
+      <p class="text-center" style="margin-top:1rem;">Already have an account? <span class="link" onclick="showLoginForm()">Login</span></p>
+    </div>
+    <div id="welcomeScreen" style="display:none;text-align:center;padding:1rem 0;">
+      <div style="font-size:4rem;margin-bottom:0.5rem;">🎉</div>
+      <h2 id="welcomeMsg" style="color:var(--orange);">Welcome!</h2>
+      <p style="color:var(--gray);margin-bottom:1.5rem;">Your account is all set. Time to order!</p>
+      <button class="submit-btn" onclick="closeLogin()">
+        <i data-lucide="utensils" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"></i> Start Ordering
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="checkout-modal-overlay" id="animatedCheckoutModal">
+  <div class="checkout-modal-container">
+    <div class="checkout-modal-header">
+      <h3><i data-lucide="shopping-bag" style="width:22px;height:22px;vertical-align:middle;margin-right:8px;"></i>Complete Your Order</h3>
+      <p>Review your details & choose payment</p>
+    </div>
+    <div class="checkout-modal-body">
+
+      <!-- MAIN FORM -->
+      <div id="checkoutMainForm">
+        <div class="checkout-prefilled-row">
+          <div class="checkout-prefilled-item">
+            <span class="cpf-label"><i data-lucide="user" style="width:11px;height:11px;"></i> Name</span>
+            <span class="cpf-value" id="checkoutDisplayName">—</span>
+          </div>
+          <div class="checkout-prefilled-item">
+            <span class="cpf-label"><i data-lucide="smartphone" style="width:11px;height:11px;"></i> Phone</span>
+            <span class="cpf-value" id="checkoutDisplayPhone">—</span>
+          </div>
+        </div>
+
+        <div class="checkout-order-summary" id="checkoutOrderSummary"></div>
+
+        <label class="checkout-label"><i data-lucide="map-pin" style="width:14px;height:14px;"></i> Delivery Address</label>
+        <textarea class="checkout-input" id="checkoutAddress" rows="2" placeholder="Flat No., Building, Street, Landmark, City"></textarea>
+
+        <label class="checkout-label"><i data-lucide="credit-card" style="width:14px;height:14px;"></i> Payment Method</label>
+        <div class="payment-methods">
+          <label class="payment-option selected" id="payOptCOD">
+            <input type="radio" name="paymentMethod" value="COD" checked onchange="selectPayment(this)">
+            <span class="pay-icon"><i data-lucide="banknote" style="width:20px;height:20px;"></i></span>
+            <span class="pay-label">Cash on Delivery</span>
+            <span class="pay-check"><i data-lucide="check" style="width:12px;height:12px;"></i></span>
+          </label>
+          <label class="payment-option" id="payOptUPI">
+            <input type="radio" name="paymentMethod" value="UPI" onchange="selectPayment(this)">
+            <span class="pay-icon"><i data-lucide="smartphone" style="width:20px;height:20px;"></i></span>
+            <span class="pay-label">UPI / GPay / PhonePe</span>
+            <span class="pay-check"><i data-lucide="check" style="width:12px;height:12px;"></i></span>
+          </label>
+          <label class="payment-option" id="payOptCard">
+            <input type="radio" name="paymentMethod" value="Card" onchange="selectPayment(this)">
+            <span class="pay-icon"><i data-lucide="credit-card" style="width:20px;height:20px;"></i></span>
+            <span class="pay-label">Credit / Debit Card</span>
+            <span class="pay-check"><i data-lucide="check" style="width:12px;height:12px;"></i></span>
+          </label>
+        </div>
+        <div id="upiDetails" style="display:none;" class="payment-extra-field">
+          <input type="text" class="checkout-input" id="upiId" placeholder="yourname@upi  or  9876543210@ybl" style="margin-top:0.5rem;margin-bottom:0;">
+        </div>
+        <div id="cardDetails" style="display:none;" class="payment-extra-field">
+          <input type="text" class="checkout-input" id="cardNumber" placeholder="Card Number (16 digits)" maxlength="19" style="margin-top:0.5rem;margin-bottom:0.5rem;">
+          <div style="display:flex;gap:0.5rem;">
+            <input type="text" class="checkout-input" id="cardExpiry" placeholder="MM/YY" maxlength="5" style="flex:1;margin-bottom:0;">
+            <input type="text" class="checkout-input" id="cardCvv" placeholder="CVV" maxlength="3" style="flex:1;margin-bottom:0;">
+          </div>
+        </div>
+
+        <div class="checkout-actions" style="margin-top:1.2rem;">
+          <button class="checkout-btn-secondary" onclick="closeCheckoutModal()">
+            <i data-lucide="x" style="width:16px;height:16px;"></i> Cancel
+          </button>
+          <button class="checkout-btn-primary" onclick="submitOrder()">
+            <i data-lucide="check-circle" style="width:16px;height:16px;"></i> Place Order
+          </button>
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div id="checkoutLoading" style="display:none;text-align:center;padding:2.5rem 0;">
+        <div class="loading-spinner"></div>
+        <p style="color:var(--gray);margin-top:0.75rem;font-weight:600;">Placing your order…</p>
+        <p style="color:var(--gray);font-size:0.82rem;margin-top:0.3rem;">This will only take a moment</p>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="checkoutSuccess" style="display:none;">
+        <div class="order-success-wrap">
+          <div class="order-success-icon-ring">
+            <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <div class="order-success-title">Order Placed!</div>
+          <p class="order-success-sub">Your food is being prepared with love.</p>
+          <div class="order-id-chip">
+            <i data-lucide="receipt" style="width:16px;height:16px;"></i>
+            <span id="successOrderId">AK-000000</span>
+          </div>
+          <div class="order-status-steps">
+            <div class="oss-step">
+              <div class="oss-dot done"><i data-lucide="check" style="width:16px;height:16px;"></i></div>
+              <div class="oss-label">Confirmed</div>
+            </div>
+            <div class="oss-connector done"></div>
+            <div class="oss-step">
+              <div class="oss-dot active"><i data-lucide="chef-hat" style="width:16px;height:16px;"></i></div>
+              <div class="oss-label active">Preparing</div>
+            </div>
+            <div class="oss-connector"></div>
+            <div class="oss-step">
+              <div class="oss-dot"><i data-lucide="bike" style="width:16px;height:16px;"></i></div>
+              <div class="oss-label">On the way</div>
+            </div>
+            <div class="oss-connector"></div>
+            <div class="oss-step">
+              <div class="oss-dot"><i data-lucide="home" style="width:16px;height:16px;"></i></div>
+              <div class="oss-label">Delivered</div>
+            </div>
+          </div>
+          <div class="order-success-actions">
+            <button class="osa-track" onclick="closeCheckoutModal();scrollToTrack()">
+              <i data-lucide="map-pin" style="width:15px;height:15px;"></i> Track Order
+            </button>
+            <button class="osa-continue" onclick="closeCheckoutModal()">
+              <i data-lucide="utensils" style="width:15px;height:15px;"></i> Order More
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="toast-icon"></span><span id="toastMsg"></span></div>
+
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<script>
+// ============================================
+// AADU'S KITCHEN — COMPLETE JS
+// ============================================
+
+const SUPABASE_URL = 'https://pnqengnkjmbqiauuzdbw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBucWVuZ25ram1icWlhdXV6ZGJ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzQ0NzgsImV4cCI6MjA5NjY1MDQ3OH0.Qlwzwhozi0z20PzcVHDRtQxq3JsfX3BpZdEdW-_4XPM';
+
+let supabaseClient = null;
+let currentUser = null;
+let cart = [];
+let currentFilter = 'all';
+
+const menuItems = [
+  {id:1, name:'Schezwan Fried Rice', category:'chinese', price:140, type:'veg', img:'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400', rating:4.7, reviews:89, desc:'Spicy Schezwan sauce with fresh veggies'},
+  {id:2, name:'Veg Crispy', category:'sichuan', price:160, type:'veg', img:'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400', rating:4.5, reviews:65, desc:'Crispy battered vegetables in Sichuan sauce'},
+  {id:3, name:'Triple Fried Rice', category:'chinese', price:160, type:'nonveg', img:'https://images.unsplash.com/photo-1596560548464-f010549b84d7?w=400', rating:4.8, reviews:112, desc:'Egg, paneer and vegetables'},
+  {id:4, name:'Veg Chowmein', category:'chinese', price:120, type:'veg', img:'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400', rating:4.5, reviews:95, desc:'Classic noodles with vegetables'},
+  {id:5, name:'Masala Papad', category:'starters', price:45, type:'veg', img:'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400', rating:4.3, reviews:45, desc:'Crispy papad with toppings'},
+  {id:6, name:'Khicha Papad', category:'starters', price:50, type:'veg', img:'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400', rating:4.2, reviews:28, desc:'Traditional khicha papad'},
+];
+
+const specials = [
+  {name:'Schezwan Fried Rice', cuisine:'Chinese Special', price:140, img:'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=300'},
+  {name:'Veg Crispy', cuisine:'Sichuan Special', price:160, img:'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=300'},
+  {name:'Triple Fried Rice', cuisine:"Chef's Choice", price:160, img:'https://images.unsplash.com/photo-1596560548464-f010549b84d7?w=300'},
+];
+
+function initSupabase() {
+  if (typeof supabase !== 'undefined' && supabase.createClient) {
+    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    checkSession();
+  } else {
+    setTimeout(initSupabase, 500);
+  }
+}
+
+async function checkSession() {
+  if (!supabaseClient) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session?.user) { currentUser = session.user; updateNavForLogin(); }
+}
+
+function updateNavForLogin() {
+  if (!currentUser) return;
+  document.getElementById('guestLoginBtn').style.display = 'none';
+  document.getElementById('userNavArea').style.display = 'flex';
+  const name = currentUser.user_metadata?.first_name || currentUser.email?.split('@')[0] || 'User';
+  document.getElementById('userAvatarBtn').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('ddName').textContent = name;
+  document.getElementById('ddPhone').textContent = currentUser.email;
+}
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  const toastMsg = document.getElementById('toastMsg');
+  if (toast && toastMsg) {
+    toastMsg.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+}
+
+function scrollToMenu() { document.getElementById('menu').scrollIntoView({behavior:'smooth'}); }
+function scrollToTrack() { document.getElementById('track').scrollIntoView({behavior:'smooth'}); }
+
+function togglePassword(inputId) {
+  const input = document.getElementById(inputId);
+  if (input) input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+// ========== SEARCH MODAL ==========
+let searchCategory = 'all';
+
+function openSearchModal() {
+  document.getElementById('searchModal').classList.add('open');
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClearBtn').style.display = 'none';
+  document.getElementById('searchResultsList').innerHTML = '<div class="no-results"><i data-lucide="search" style="width:32px;height:32px;opacity:0.3;display:block;margin:0 auto 0.5rem;"></i>Type above to discover dishes…</div>';
+  searchCategory = 'all';
+  document.querySelectorAll('.search-pill').forEach(p => p.classList.remove('active'));
+  document.querySelector('.search-pill').classList.add('active');
+  setTimeout(() => { document.getElementById('searchInput').focus(); initIcons(); }, 100);
+}
+
+function closeSearchModal() { document.getElementById('searchModal').classList.remove('open'); }
+function handleSearchOverlayClick(e) { if (e.target === document.getElementById('searchModal')) closeSearchModal(); }
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClearBtn').style.display = 'none';
+  document.getElementById('searchResultsList').innerHTML = '<div class="no-results"><i data-lucide="search" style="width:32px;height:32px;opacity:0.3;display:block;margin:0 auto 0.5rem;"></i>Type above to discover dishes…</div>';
+  initIcons();
+}
+
+function setSearchCategory(cat, btn) {
+  searchCategory = cat;
+  document.querySelectorAll('.search-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  performSearch();
+}
+
+function performSearch() {
+  const query = document.getElementById('searchInput').value.toLowerCase().trim();
+  const resultsDiv = document.getElementById('searchResultsList');
+  const clearBtn = document.getElementById('searchClearBtn');
+  clearBtn.style.display = query ? 'flex' : 'none';
+
+  let pool = searchCategory === 'all' ? menuItems : menuItems.filter(i => i.category === searchCategory);
+  if (query === '' && searchCategory === 'all') {
+    resultsDiv.innerHTML = '<div class="no-results"><i data-lucide="search" style="width:32px;height:32px;opacity:0.3;display:block;margin:0 auto 0.5rem;"></i>Type above to discover dishes…</div>';
+    initIcons(); return;
+  }
+  const results = query ? pool.filter(item => item.name.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)) : pool;
+  if (results.length === 0) {
+    resultsDiv.innerHTML = '<div class="no-results">No dishes found. Try "Rice", "Noodles", or "Crispy"</div>';
+  } else {
+    resultsDiv.innerHTML = results.map(item => `
+      <div class="search-result-item" onclick="addToCartAndCloseSearch(${item.id},'${item.name}')">
+        <img class="search-result-img" src="${item.img}" alt="${item.name}" onerror="this.style.display='none'">
+        <div class="search-result-info">
+          <div class="search-result-name">${item.name}</div>
+          <div class="search-result-meta">⭐ ${item.rating} · ${item.reviews} reviews · ${item.category}</div>
+        </div>
+        <div class="search-result-right">
+          <div class="search-result-price">₹${item.price}</div>
+          <button class="search-result-add" onclick="event.stopPropagation();addToCartAndCloseSearch(${item.id},'${item.name}')">+ Add</button>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function addToCartAndCloseSearch(id, name) {
+  addToCart(id);
+  closeSearchModal();
+  showToast(`${name} added to cart!`);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeSearchModal(); closeCheckoutModal(); }
+});
+
+// ========== PAYMENT ==========
+function selectPayment(radio) {
+  document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+  radio.closest('.payment-option').classList.add('selected');
+  document.getElementById('upiDetails').style.display = radio.value === 'UPI' ? 'block' : 'none';
+  document.getElementById('cardDetails').style.display = radio.value === 'Card' ? 'block' : 'none';
+}
+
+// ========== CART ==========
+function addToCart(id) {
+  const item = menuItems.find(i => i.id === id);
+  if (!item) return;
+  const existing = cart.find(i => i.id === id);
+  if (existing) existing.qty++;
+  else cart.push({...item, qty: 1});
+  updateCart();
+}
+
+function removeFromCart(id) {
+  const index = cart.findIndex(i => i.id === id);
+  if (index === -1) return;
+  if (cart[index].qty > 1) cart[index].qty--;
+  else cart.splice(index, 1);
+  updateCart();
+}
+
+function updateCart() {
+  const count = cart.reduce((sum, i) => sum + i.qty, 0);
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  document.getElementById('cartCount').textContent = count;
+  document.getElementById('cartTotal').innerHTML = `₹${total}`;
+  const cartItemsDiv = document.getElementById('cartItems');
+  const cartFooter = document.getElementById('cartFooter');
+  if (cart.length === 0) {
+    cartItemsDiv.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon"><span class="ico"><i data-lucide="shopping-basket"></i></span></div><p>Your cart is empty</p></div>';
+    cartFooter.style.display = 'none';
+  } else {
+    cartItemsDiv.innerHTML = cart.map(item => `
+      <div class="cart-item">
+        <img class="cart-item-img" src="${item.img}" alt="${item.name}">
+        <div class="cart-item-info"><div class="cart-item-name">${item.name}</div><div class="cart-item-price">₹${item.price * item.qty}</div></div>
+        <div class="cart-qty">
+          <button class="qty-btn" onclick="removeFromCart(${item.id})">−</button>
+          <span class="qty-num">${item.qty}</span>
+          <button class="qty-btn" onclick="addToCart(${item.id})">+</button>
+        </div>
+      </div>
+    `).join('');
+    cartFooter.style.display = 'block';
+  }
+  initIcons();
+}
+
+function openCart() { document.getElementById('cartSidebar').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); }
+function closeCart() { document.getElementById('cartSidebar').classList.remove('open'); document.getElementById('cartOverlay').classList.remove('open'); }
+
+// ========== MENU ==========
+function renderMenu() {
+  const filtered = currentFilter === 'all' ? menuItems : menuItems.filter(i => i.category === currentFilter);
+  const grid = document.getElementById('menuGrid');
+  if (!grid) return;
+  grid.innerHTML = filtered.map(item => `
+    <div class="food-card">
+      <div class="food-card-img"><img src="${item.img}" alt="${item.name}"><div class="veg-badge ${item.type}"></div><div class="food-tag">${item.category}</div></div>
+      <div class="food-card-body"><div class="food-name">${item.name}</div><div class="food-desc">${item.desc}</div><div class="food-footer"><div class="food-price">₹${item.price}</div><button class="add-btn" onclick="addToCart(${item.id})">+ Add</button></div></div>
+    </div>
+  `).join('');
+  setTimeout(initIcons, 50);
+}
+
+function renderSpecials() {
+  const grid = document.getElementById('specialGrid');
+  if (!grid) return;
+  grid.innerHTML = specials.map(s => `
+    <div class="special-item"><div class="special-img-wrap"><img src="${s.img}" alt="${s.name}"></div><div class="special-cuisine">${s.cuisine}</div><div class="special-name">${s.name}</div><div class="special-price">₹${s.price}</div><button class="buy-btn" onclick="addToCartByName('${s.name}')">Buy Now</button></div>
+  `).join('');
+  initIcons();
+}
+
+function addToCartByName(name) { const item = menuItems.find(i => i.name === name); if (item) addToCart(item.id); }
+function filterMenu(category, btn) {
+  currentFilter = category;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderMenu();
+}
+
+// ========== AUTH ==========
+function openLogin() { document.getElementById('loginModal').classList.add('open'); showLoginForm(); }
+function closeLogin() { document.getElementById('loginModal').classList.remove('open'); }
+function showLoginForm() {
+  document.getElementById('loginForm').style.display = 'block';
+  document.getElementById('signupForm').style.display = 'none';
+  document.getElementById('welcomeScreen').style.display = 'none';
+}
+function showSignupForm() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('signupForm').style.display = 'block';
+  document.getElementById('welcomeScreen').style.display = 'none';
+}
+
+async function handleEmailLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showToast('Please enter email and password'); return; }
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) { showToast(error.message); return; }
+  currentUser = data.user;
+  updateNavForLogin();
+  showToast(`Welcome back!`);
+  closeLogin();
+}
+
+async function handleSignUp() {
+  const firstName = document.getElementById('signupFirstName').value;
+  const lastName = document.getElementById('signupLastName').value;
+  const email = document.getElementById('signupEmail').value;
+  const password = document.getElementById('signupPassword').value;
+  const phone = document.getElementById('signupPhone').value;
+  const address = document.getElementById('signupAddress').value;
+  const city = document.getElementById('signupCity').value;
+  const pin = document.getElementById('signupPin').value;
+  if (!firstName || !lastName) { showToast('Please enter your name'); return; }
+  if (!email) { showToast('Please enter email'); return; }
+  if (!password || password.length < 6) { showToast('Password must be 6+ characters'); return; }
+  const { data, error } = await supabaseClient.auth.signUp({
+    email, password,
+    options: { data: { first_name: firstName, last_name: lastName, phone, address, city, pincode: pin } }
+  });
+  if (error) { showToast(error.message); return; }
+  if (data?.user) {
+    document.getElementById('welcomeMsg').textContent = `Welcome, ${firstName}!`;
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('signupForm').style.display = 'none';
+    document.getElementById('welcomeScreen').style.display = 'block';
+    showToast('Account created!');
+    initIcons();
+  }
+}
+
+function logoutUser() {
+  supabaseClient.auth.signOut();
+  currentUser = null;
+  document.getElementById('guestLoginBtn').style.display = '';
+  document.getElementById('userNavArea').style.display = 'none';
+  showToast('Logged out');
+}
+
+function toggleUserDropdown() { document.getElementById('userDropdown').classList.toggle('open'); }
+document.addEventListener('click', (e) => {
+  const area = document.getElementById('userNavArea');
+  const dropdown = document.getElementById('userDropdown');
+  if (area && dropdown && !area.contains(e.target)) dropdown.classList.remove('open');
+});
+
+// ========== CHECKOUT ==========
+function openCheckoutModal() {
+  if (!currentUser) { showToast('Please login to place order'); openLogin(); return; }
+  if (cart.length === 0) { showToast('Your cart is empty!'); return; }
+  const meta = currentUser.user_metadata || {};
+  const name = [meta.first_name, meta.last_name].filter(Boolean).join(' ') || currentUser.email?.split('@')[0] || '';
+  const phone = meta.phone || '';
+  document.getElementById('checkoutDisplayName').textContent = name || '—';
+  document.getElementById('checkoutDisplayPhone').textContent = phone ? '+91 ' + phone : currentUser.email || '—';
+  document.getElementById('checkoutAddress').value = meta.address ? `${meta.address}, ${meta.city || 'Mumbai'} - ${meta.pincode || ''}`.trim() : '';
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  document.getElementById('checkoutOrderSummary').innerHTML = `
+    <div class="checkout-summary-box">
+      ${cart.map(i => `<div class="cs-row"><span>${i.name} ×${i.qty}</span><span>₹${i.price * i.qty}</span></div>`).join('')}
+      <div class="cs-total"><span>Total</span><span>₹${total}</span></div>
+    </div>
+  `;
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+  document.getElementById('payOptCOD').classList.add('selected');
+  const codRadio = document.querySelector('input[name="paymentMethod"][value="COD"]');
+  if (codRadio) codRadio.checked = true;
+  document.getElementById('upiDetails').style.display = 'none';
+  document.getElementById('cardDetails').style.display = 'none';
+  document.getElementById('checkoutMainForm').style.display = 'block';
+  document.getElementById('checkoutLoading').style.display = 'none';
+  document.getElementById('checkoutSuccess').style.display = 'none';
+  document.getElementById('animatedCheckoutModal').classList.add('open');
+  closeCart();
+  setTimeout(initIcons, 100);
+}
+
+function closeCheckoutModal() { document.getElementById('animatedCheckoutModal').classList.remove('open'); }
+
+async function submitOrder() {
+  if (!currentUser) { showToast('Please login to place order'); closeCheckoutModal(); openLogin(); return; }
+  const address = document.getElementById('checkoutAddress').value.trim();
+  if (!address) { showToast('Please enter delivery address'); return; }
+  const meta = currentUser.user_metadata || {};
+  const name = [meta.first_name, meta.last_name].filter(Boolean).join(' ') || currentUser.email?.split('@')[0] || '';
+  const phone = meta.phone || '';
+  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'COD';
+  if (paymentMethod === 'UPI') {
+    const upi = document.getElementById('upiId').value.trim();
+    if (!upi) { showToast('Please enter your UPI ID'); return; }
+  }
+  if (paymentMethod === 'Card') {
+    const cardNum = document.getElementById('cardNumber').value.replace(/\s/g,'');
+    if (cardNum.length < 16) { showToast('Please enter valid 16-digit card number'); return; }
+    if (!document.getElementById('cardExpiry').value.trim()) { showToast('Please enter card expiry'); return; }
+    if (document.getElementById('cardCvv').value.trim().length < 3) { showToast('Please enter 3-digit CVV'); return; }
+  }
+
+  document.getElementById('checkoutMainForm').style.display = 'none';
+  document.getElementById('checkoutLoading').style.display = 'block';
+
+  const itemsSummary = cart.map(i => `${i.name} x${i.qty} (Rs.${i.price * i.qty})`).join(', ');
+  const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const orderId = 'AK-' + Date.now().toString().slice(-6);
+  const orderData = {
+    id: orderId,
+    customer_name: name,
+    phone: phone ? '+91 ' + phone : currentUser.email,
+    items_summary: itemsSummary,
+    total: total,
+    delivery_address: address,
+    payment_method: paymentMethod,
+    status: 'Placed'
+  };
+
+  try {
+    if (!supabaseClient) throw new Error('Supabase not initialised');
+    const { data, error } = await supabaseClient.from('orders').insert([orderData]).select();
+    if (error) throw error;
+
+    document.getElementById('checkoutLoading').style.display = 'none';
+    document.getElementById('checkoutSuccess').style.display = 'block';
+    document.getElementById('successOrderId').textContent = orderId;
+    cart = [];
+    updateCart();
+    showToast('Order #' + orderId + ' placed!');
+    setTimeout(initIcons, 100);
+
+  } catch (err) {
+    document.getElementById('checkoutLoading').style.display = 'none';
+    document.getElementById('checkoutMainForm').style.display = 'block';
+    showToast('Error: ' + err.message);
+  }
+}
+
+// ========== TRACK ORDER ==========
+function trackOrder() {
+  const orderId = document.getElementById('trackInput').value;
+  if (!orderId) { showToast('Please enter Order ID'); return; }
+  document.getElementById('trackResult').style.display = 'block';
+  document.getElementById('trackOrderId').textContent = orderId;
+  document.getElementById('trackOrderStatus').textContent = '🟡 Order is being prepared';
+}
+
+function copyCode(code) { navigator.clipboard.writeText(code); showToast(`Code ${code} copied!`); }
+function openAccount() { showToast('Account features coming soon!'); }
+
+// ========== REVEAL ANIMATIONS ==========
+function observeReveal() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+}
+
+// ========== GLOBALS ==========
+window.addToCart = addToCart; window.removeFromCart = removeFromCart;
+window.openCart = openCart; window.closeCart = closeCart;
+window.openCheckoutModal = openCheckoutModal; window.closeCheckoutModal = closeCheckoutModal;
+window.submitOrder = submitOrder; window.filterMenu = filterMenu;
+window.trackOrder = trackOrder; window.copyCode = copyCode;
+window.openLogin = openLogin; window.closeLogin = closeLogin;
+window.handleEmailLogin = handleEmailLogin; window.handleSignUp = handleSignUp;
+window.logoutUser = logoutUser; window.toggleUserDropdown = toggleUserDropdown;
+window.togglePassword = togglePassword; window.showLoginForm = showLoginForm;
+window.showSignupForm = showSignupForm; window.scrollToMenu = scrollToMenu;
+window.scrollToTrack = scrollToTrack; window.openAccount = openAccount;
+window.openSearchModal = openSearchModal; window.closeSearchModal = closeSearchModal;
+window.addToCartAndCloseSearch = addToCartAndCloseSearch; window.addToCartByName = addToCartByName;
+window.selectPayment = selectPayment; window.clearSearch = clearSearch;
+window.setSearchCategory = setSearchCategory; window.handleSearchOverlayClick = handleSearchOverlayClick;
+
+function initIcons() { if (typeof lucide !== 'undefined') lucide.createIcons(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderMenu();
+  renderSpecials();
+  observeReveal();
+  initSupabase();
+  setTimeout(initIcons, 300);
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.addEventListener('input', performSearch);
+
+  const cardNum = document.getElementById('cardNumber');
+  if (cardNum) cardNum.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim().slice(0,19);
+  });
+  const cardExpiry = document.getElementById('cardExpiry');
+  if (cardExpiry) cardExpiry.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g,'').replace(/^(\d{2})(\d)/,'$1/$2').slice(0,5);
+  });
+});
+
+window.addEventListener('load', initIcons);
+</script>
+</body>
+</html>
